@@ -43,7 +43,7 @@ Date: 2022/07/26
 Run the QuSpin at a decimation rate that reads out the counter from the internal DAC and use that to determine what is the maximum number of samples that can be stored inside the Qu-spin (priority: low, no impact on anticipated data taking methods in the near future)
 ---
 #### Orientation Testing
-
+We tested possible deadzones of the QTFM sensor based on the oreintation of the sensor relative to the magnetic field it was in. This was quantified by the use of the sensors strength value, with 0 meaning the sensor could not lock onto a field, and 100 meaning it was operating at maximum efficiency.
 ---
 #### Buffer Testing
 
