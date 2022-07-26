@@ -1,0 +1,199 @@
+import serial
+import time
+import re
+import numpy as np
+import matplotlib.pyplot as plt
+
+import time
+start_time = time.strftime("%Y%m%d-%H%M%S")
+import csv 
+
+
+ser1=serial.Serial(port='COM5', baudrate=115200, bytesize=8, parity='N', stopbits=1, timeout=2) #change COM number based on COM connection you have
+
+
+def qtfm_write(port,command):
+    port.write(command.encode())
+    
+def qtfm_read(port):
+    line=port.readline().decode()
+    return line
+
+def qtfm_write_counter_reset(port):
+   qtfm_write(ser1,'^')
+   
+def qtfm_read_dt(port):
+    qtfm_write(ser1,'p')
+    a=qtfm_read(port)
+    while(True):
+        matchdt=re.search('^\#DT(\d+.\d+)',a)
+        if(matchdt):
+            dt=float(matchdt.groups()[0])
+            break
+        else:
+            a=qtfm_read(ser1)
+    return dt
+
+def qtfm_Read_Raw_Data(port,n):
+    '''
+    Readout raw data from probe to text file n times with current setttings.
+    Resets counter at start of readout by default
+    '''
+    qtfm_write_counter_reset(port)
+    
+    f = open('Raw_QTFM_Data_'+start_time+'.csv', "w")
+    dt=qtfm_read_dt(ser1)
+    f.write("#dt for probe: %f\n"%dt)
+    for i in range(n):
+        a=qtfm_read(ser1)
+        f.write(a)
+    f.close()
+
+def qtfm_advance_dt(port):
+    qtfm_write(ser1,'o')
+    a=qtfm_read(port)
+    while(True):
+        matchdt=re.search('^\#DT(\d+.\d+)',a)
+        if(matchdt):
+            dt=float(matchdt.groups()[0])
+            break
+        else:
+            a=qtfm_read(ser1)
+    while(True):
+        matchn=re.search('^\#Avg 2\*\*(\d+)',a)
+        if(matchn):
+            n=int(matchn.groups()[0])
+            break
+        else:
+            a=qtfm_read(ser1)
+    return dt,n
+
+def qtfm_set_n(port,n):
+    while(True):
+        dt,nread=qtfm_advance_dt(port)
+        if(nread==n):
+            print("n has been set to %d with dt %f"%(nread,dt))
+            break
+      
+qtfm_set_n(ser1,8)    #n can be in range 2-11, 2 being dt=.0025s and 11 being dt=1.25s
+dt=qtfm_read_dt(ser1)
+print("Yes, dt is indeed %f"%dt)
+
+
+
+qtfm_write_counter_reset(ser1) #use this to reset counter, after you have read out the dt
+
+
+# dt,n=qtfm_advance_dt(ser1) #advance dt one step at a time through its range as opposed to changing to desired n
+# print('The new dt is ',dt,' and n is ',n)
+
+
+
+#ser1.write('>'.encode())
+
+
+real_fields=[]
+strengths=[]
+saving_data=[]
+icounter=0
+oldicounter=0
+for i in range(20):
+    a=qtfm_read(ser1)
+
+    if(a[0]=='!'):                                         #typical readline output is !unconvertedfieldvalue@strengthvalue^countervalue
+        # this is a magnetometer reading                  
+        match3=re.search('^\!(\d+)\@(\d+)\^(\d+)\\r\\n$',a)
+        match2=re.search('^\!(\d+)\@(\d+)\\r\\n$',a)            
+        match1=re.search('^\!(\d+)\\r\\n$',a)
+        if match3:
+            #print("matched all three")
+            field,strength,counter=[int(x) for x in match3.groups()]
+            icounter=int(counter)
+        elif match2:
+            #print("matched two")
+            field,strength=[int(x) for x in match2.groups()]           #counter value only available for n>=6
+            counter=-1   
+            
+        elif match1:
+            #print("matched one")
+            print(match1.groups())
+            field=int(match1.groups()[0])            #if not matching stength, field is likely not locked
+            print(field)
+            strength=-1
+            counter=-1
+            
+        else:
+            print("didn't match either, must be something else!")
+            field=strength=counter=-1
+        # 6009.342147 is the conversion factor to nanoTesla
+        real_field=float(field)/6009.342147
+        real_fields.append(real_field)
+        print(i,real_field,oldicounter-icounter,a)
+        oldicounter=icounter
+        #if(i<10):
+        #    time.sleep(3)
+        real_strength=float(strength)
+        strengths.append(real_strength) #comment out if you aren't trying to save strengths for strength vs time
+        
+        
+        
+        
+        saving_data.append([i,real_field,strength,counter])
+       
+    elif (a[0]=='*'):
+        # this is a status code
+        print('status code ',a)
+    elif (a[0]=='#'):
+        # this is a response to a command
+        print(a)
+    else:
+        # it is probably another status code like ~CH seems to appear when relocking
+        print(a)
+
+indices=np.arange(len(real_fields))
+times=indices*dt
+#print(i,real_field,strength)  
+    #print(re.match(r"s/^\!(\d+)\@(\d+)\^?(\d*)/\1\,\2\,\3/", a ) )
+    #print([s for s in re.findall(r'\@\d+',a)])
+    #print([s for s in re.match(r's/\!(\d+)\@\d+/\1/',a)])
+    #print(field,strength,a,i)
+#print(real_fields)
+
+
+
+no_strength=-1
+
+try:
+    while True:
+        strengths.remove(no_strength)    # this is to remove all strength values read when it cannot read a strength (set to -1 in match1 statement above)
+except ValueError:                       #allows you to determine average strength while ignoring periods where sensor may have unlocked due to some circumstance
+    pass
+    
+
+
+#comment out if you aren't trying to save strengths for strength vs time testing
+avg_strength=np.mean(strengths) #averages all true strength values (ignores -1 since it means no reading as defined above)
+
+
+
+    
+
+print('The average strength of that data collection was ', avg_strength)
+
+
+plt.plot(times,real_fields)
+plt.xlabel("Time(s)")
+plt.ylabel("Field(nT)")
+
+plt.show()
+
+
+
+with open('QTFM_Data_'+start_time+'.csv','w') as file:
+    writer=csv.writer(file)                       #save to a csv index,field,strengt,counter
+    writer.writerows(saving_data)
+
+
+
+
+ser1.close()
