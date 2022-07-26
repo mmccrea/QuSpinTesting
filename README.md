@@ -27,7 +27,7 @@ Performed By: T. Hepworth, M. McCrea, J. Martin, and A. Zahra
 Date: 2022/07/26
 
 ##### Method:
-- Data taking was controled through the python code at *put link to file here* on 2022/07/26.
+- Data taking was controled through the python code at https://github.com/mmccrea/QuSpinTesting/blob/main/QTFM_DAQ_Code on 2022/07/26.
 - Data taking was started by connecting to the serial port that communicates with the Qu-Spin sensor.
 - Decimation rate was set to give roughly 0.62 to 1.25 seconds between data points so a human could evaluate the timing of the module.
 - Various sleep() statements were used to pause data taking either after the communications was established, or after one or more  data points were taken.
