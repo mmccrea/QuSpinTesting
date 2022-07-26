@@ -22,7 +22,7 @@ Information online relavent to the project
 ### Qu Spin Tests and Results
 Short summaries of test results, folders can be made to add results
 #### Buffer Testing
-Performed By: T. Hepburn, M. McCrea, J. Martin, and A. Zahra
+Performed By: T. Hepworth, M. McCrea, J. Martin, and A. Zahra
 
 Date: 2022/07/26
 
