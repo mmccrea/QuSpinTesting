@@ -6,6 +6,7 @@ The goal is to have simultaneous readout of the Quspin sensor and the data from 
 #Web Links
 Information online relavent to the project
 [QuSpin Sensor Supplier page](https://quspin.com/qtfm/)
+[QTFM serial comms list] (http://quspin.com/qtfm/qtfm-serial-communication/)
 
 ## Qu Spin Relavent Information
 - Internal DAC Sample rate: 1600Hz
