@@ -9,7 +9,7 @@ import matplotlib.pyplot as pp
 import numpy as np 
 
 oreintation,strength=np.genfromtxt(fname="Oreintation_strength.csv",delimiter= ',',skip_header=28, dtype={'names':('oreintation','strength'),'formats':('float','float')},unpack=True)
-
+                                                                                    #Have to change skip_header and file name based on the file you are importing
 from matplotlib.pyplot import figure
 figure(figsize=(30, 30), dpi=100)
 
