@@ -23,7 +23,7 @@ Information online relavent to the project
 ### Qu Spin Tests and Results
 Short summaries of test results, folders can be made to add results
 #### Buffer Testing
-Performed By: T. Hepworth, M. McCrea, J. Martin, and A. Zahra
+Performed By: T. Hepworth, J. Martin, M. McCrea, and A. Zahra
 
 Date: 2022/07/26
 
@@ -40,10 +40,13 @@ Date: 2022/07/26
 - It appears to be a FIFO buffer returining the oldest data points first.
 
 ##### Future Tests
+
 Run the QuSpin at a decimation rate that reads out the counter from the internal DAC and use that to determine what is the maximum number of samples that can be stored inside the Qu-spin (priority: low, no impact on anticipated data taking methods in the near future)
----
+
 #### Orientation Testing
+
 We tested possible deadzones of the QTFM sensor based on the oreintation of the sensor relative to the magnetic field it was in. This was quantified by the use of the sensors strength value, with 0 meaning the sensor could not lock onto a field, and 100 meaning it was operating at maximum efficiency.
+
 ---
 #### Buffer Testing
 
